@@ -185,14 +185,21 @@ namespace MonopolyDeal
                         selectedCard = 0;
                         cardSelected = false;
                         break;
-                    case "lay down property":
-                        Console.WriteLine("What property would you like to lay down?");
-
+                    case "lay down property":                        
                         var queryPropertyCards = from card in handArray[iPlayer].CardPile
                                                  where card.Type == "Property" ||
                                                        card.Type == "Wild" ||
                                                        card.Type == ""
                                                  select card;
+
+                        if (queryPropertyCards.Count() < 1 )
+                        {
+                            Console.WriteLine("You don't have any property cards you can lay down.\n" +
+                                              "Please try another action.");
+                            break; 
+                        }
+
+                        Console.WriteLine("What property would you like to lay down?");
 
                         for (int j = 0; j < queryPropertyCards.ToArray().Count(); j++)
                         {
@@ -211,16 +218,43 @@ namespace MonopolyDeal
                                 Console.WriteLine("Oops! Just type the number of the card you'd like to bank.");
                             }
 
-                        } while (cardSelected == false);
+                        } while (!cardSelected);
 
-                        Console.WriteLine($"You selected {queryPropertyCards.ToArray()[selectedCard].GetCardDescription()}");
+                        Console.WriteLine($"Laying down this property: {queryPropertyCards.ToArray()[selectedCard].GetCardDescription()}");
 
                         var queryHandForProperty = from   handCard in handArray[iPlayer].CardPile
                                                    where  handCard == queryPropertyCards.ToArray()[selectedCard]
-                                                   select handCard;                            
+                                                   select handCard;
+                        
+                        if (queryHandForProperty.ToArray()[0].Color.Contains("|"))
+                        {
+                            string[] colors = queryHandForProperty.ToArray()[0].Color.Split('|');
+                            bool wildSelected = false;
+                            string wildColor;
+                            Console.WriteLine($"What color do you want to assign this wild property?");
+                            foreach(var color in colors)
+                            {
+                                Console.WriteLine($"{color}");
+                            }
 
-                        // query should only return one record, so grab first record
-                        // Console.WriteLine($"You selected {queryHandForProperty.ToArray()[0].GetCardDescription()}");
+                            do
+                            {
+                                wildColor = Console.ReadLine();
+                                var wildQuery = from   color in colors
+                                                where  color == wildColor
+                                                select color;
+                                if (wildQuery.Count() < 1)
+                                {
+                                    Console.WriteLine("Please select a valid color.");
+                                }
+                                if (wildQuery.Count() > 0)
+                                {
+                                    // change color to user selected value
+                                    queryHandForProperty.ToArray()[0].Color = wildColor;
+                                    wildSelected = true;
+                                }
+                            } while (!wildSelected);
+                        }                            
 
                         // query for any properties of same color and not full
                         bool addedToExisting = false;
@@ -233,7 +267,10 @@ namespace MonopolyDeal
                             // if avail, add to existing
                             if (propertyQuery.Count() > 0 )
                             {
+                                // add to property set
                                 propertyArray[iPlayer][i].AddCard(queryPropertyCards.ToArray()[selectedCard]);
+                                // remove from hand
+                                handArray[iPlayer].RemoveCard(queryPropertyCards.ToArray()[selectedCard]);
                                 addedToExisting = true;
                                 break;
                             }
@@ -274,7 +311,7 @@ namespace MonopolyDeal
                     case "show properties":
                         foreach(PropertySet property in propertyArray[iPlayer])
                         {
-                            Console.WriteLine($"Cards in {property.Color} set:\n");
+                            Console.WriteLine($"Cards in {property.Color} set:");
                             foreach(Card card in property.CardPile)
                             {
                                 Console.WriteLine(card.GetCardDescription());
