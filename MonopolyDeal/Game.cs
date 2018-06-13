@@ -228,14 +228,10 @@ namespace MonopolyDeal
                             break;
                         }
 
-                        var queryHandForProperty = from   handCard in handArray[iPlayer].CardPile
-                                                   where  handCard == queryPropertyCards.ToArray()[selectedCard]
-                                                   select handCard;
-
                         string wildColor = "";
-                        if (queryHandForProperty.ToArray()[0].Color.Contains("|"))
+                        if (queryPropertyCards.ToArray()[selectedCard].Color.Contains("|"))
                         {
-                            string[] colors = queryHandForProperty.ToArray()[0].Color.Split('|');
+                            string[] colors = queryPropertyCards.ToArray()[selectedCard].Color.Split('|');
                             bool wildSelected = false;                            
                             Console.WriteLine($"What color do you want to assign this wild property?");
                             foreach(var color in colors)
@@ -263,7 +259,7 @@ namespace MonopolyDeal
                         // assign to wildColor if not blank; otherwise, default card value
                         string selectedCardColor = wildColor != "" ?
                                 wildColor :
-                                queryHandForProperty.ToArray()[0].Color;
+                                queryPropertyCards.ToArray()[selectedCard].Color;
 
                         Console.WriteLine($"Laying down this property: {queryPropertyCards.ToArray()[selectedCard].GetCardDescription()}");
 
