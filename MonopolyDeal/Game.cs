@@ -185,7 +185,8 @@ namespace MonopolyDeal
                         selectedCard = 0;
                         cardSelected = false;
                         break;
-                    case "lay down property":                        
+                    case "lay down property": 
+                        // all potential property cards in hand
                         var queryPropertyCards = from card in handArray[iPlayer].CardPile
                                                  where card.Type == "Property" ||
                                                        card.Type == "Wild" ||
@@ -218,19 +219,24 @@ namespace MonopolyDeal
                                 Console.WriteLine("Oops! Just type the number of the card you'd like to bank.");
                             }
 
-                        } while (!cardSelected);
+                        } while (!cardSelected);                        
 
-                        Console.WriteLine($"Laying down this property: {queryPropertyCards.ToArray()[selectedCard].GetCardDescription()}");
+
+                        if (selectedCard > queryPropertyCards.ToArray().Count() - 1)
+                        {
+                            Console.WriteLine("Oops!  Invalid selection...");
+                            break;
+                        }
 
                         var queryHandForProperty = from   handCard in handArray[iPlayer].CardPile
                                                    where  handCard == queryPropertyCards.ToArray()[selectedCard]
                                                    select handCard;
-                        
+
+                        string wildColor = "";
                         if (queryHandForProperty.ToArray()[0].Color.Contains("|"))
                         {
                             string[] colors = queryHandForProperty.ToArray()[0].Color.Split('|');
-                            bool wildSelected = false;
-                            string wildColor;
+                            bool wildSelected = false;                            
                             Console.WriteLine($"What color do you want to assign this wild property?");
                             foreach(var color in colors)
                             {
@@ -241,7 +247,7 @@ namespace MonopolyDeal
                             {
                                 wildColor = Console.ReadLine();
                                 var wildQuery = from   color in colors
-                                                where  color == wildColor
+                                                where  color.ToLower() == wildColor.ToLower()
                                                 select color;
                                 if (wildQuery.Count() < 1)
                                 {
@@ -249,19 +255,24 @@ namespace MonopolyDeal
                                 }
                                 if (wildQuery.Count() > 0)
                                 {
-                                    // change color to user selected value
-                                    queryHandForProperty.ToArray()[0].Color = wildColor;
                                     wildSelected = true;
                                 }
                             } while (!wildSelected);
-                        }                            
+                        }
+
+                        // assign to wildColor if not blank; otherwise, default card value
+                        string selectedCardColor = wildColor != "" ?
+                                wildColor :
+                                queryHandForProperty.ToArray()[0].Color;
+
+                        Console.WriteLine($"Laying down this property: {queryPropertyCards.ToArray()[selectedCard].GetCardDescription()}");
 
                         // query for any properties of same color and not full
                         bool addedToExisting = false;
                         for(int i = 0; i < propertyArray[iPlayer].Count(); i++)
                         {
                             var propertyQuery = from   propertySet in propertyArray[iPlayer][i].CardPile
-                                                where  propertyArray[iPlayer][i].Color    == queryHandForProperty.ToArray()[0].Color &&
+                                                where  propertyArray[iPlayer][i].Color.ToLower() == selectedCardColor.ToLower() &&
                                                        propertyArray[iPlayer][i].GetSize() < propertyArray[iPlayer][i].Capacity
                                                 select propertySet;
                             // if avail, add to existing
@@ -280,7 +291,7 @@ namespace MonopolyDeal
                         if (!addedToExisting)
                         {
                             // create property set
-                            propertyArray[iPlayer].Add(new PropertySet(playerArray[iPlayer].Name,"Property",queryHandForProperty.ToArray()[0].Color));
+                            propertyArray[iPlayer].Add(new PropertySet(playerArray[iPlayer].Name,"Property",selectedCardColor));
                             // add to property set
                             propertyArray[iPlayer].Last().AddCard(queryPropertyCards.ToArray()[selectedCard]);
                             // remove from hand
@@ -312,11 +323,84 @@ namespace MonopolyDeal
                         foreach(PropertySet property in propertyArray[iPlayer])
                         {
                             Console.WriteLine($"Cards in {property.Color} set:");
-                            foreach(Card card in property.CardPile)
+                            property.ShowCards();
+                        }
+                        break;
+                    case "change wild color":
+                        // for each list of cards in the array, spin through the list and put the wild cards in a separate list
+                        List<Card> wildCards = new List<Card>();
+                        for (int i = 0; i < propertyArray[iPlayer].Count(); i++)
+                        {
+                            var getWildQuery = from   wildCard in propertyArray[iPlayer][i].CardPile
+                                               where  wildCard.Type == "Wild"
+                                               select wildCard;
+                            foreach(Card card in getWildQuery.ToArray())
                             {
-                                Console.WriteLine(card.GetCardDescription());
+                                wildCards.Add(card);
                             }
                         }
+
+                        if (wildCards.Count() < 1 )
+                        {
+                            Console.WriteLine("You don't have any wild cards laid down!");
+                            break;
+                        }
+
+                        // Below two sections were taken from the 'lay down property' option
+                        // Can we make this a function?  perhaps a method on the Pile class?  PropertySet class??
+
+                        //Console.WriteLine("Which wild card would you like to change?");
+                        //for (int i = 0; i < wildCards.Count(); i++)
+                        //{
+                        //    Console.WriteLine($"{i} {wildCards[i].GetCardDescription()}");
+                        //}                       
+                        //do
+                        //{
+                        //    try
+                        //    {
+                        //        selectedCard = Int32.Parse(Console.ReadLine());
+                        //        cardSelected = true;
+                        //    }
+                        //    catch
+                        //    {
+                        //        Console.WriteLine("Oops! Just type the number of the wild card you'd like to change.");
+                        //    }
+
+                        //} while (!cardSelected);
+
+
+                        //if (selectedCard > wildCards.Count() - 1)
+                        //{
+                        //    Console.WriteLine("Oops!  Invalid selection...");
+                        //    break;
+                        //}
+
+                        //string[] wildColors = wildCards[selectedCard].Color.Split('|');
+                        //bool wildSelected = false;
+                        //Console.WriteLine($"What color do you want to assign this wild property?");
+                        //foreach (var color in wildColors)
+                        //{
+                        //    Console.WriteLine($"{color}");
+                        //}
+
+                        //do
+                        //{
+                        //    wildColor = Console.ReadLine();
+                        //    var wildQuery = from color in wildColors
+                        //                    where color.ToLower() == wildColor.ToLower()
+                        //                    select color;
+                        //    if (wildQuery.Count() < 1)
+                        //    {
+                        //        Console.WriteLine("Please select a valid color.");
+                        //    }
+                        //    if (wildQuery.Count() > 0)
+                        //    {
+                        //        wildSelected = true;
+                        //    }
+                        //} while (!wildSelected);
+
+
+
                         break;
                     case "show actions":
                         Console.WriteLine($"You have {numOfActions} actions left.");
