@@ -40,6 +40,8 @@ namespace MonopolyDeal
             }
         }
 
+        
+
         List<Card> PropertyPile { get; set; }
         public string Color { get; set; }
         public int Capacity { get; set; }
