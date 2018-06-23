@@ -191,6 +191,34 @@ namespace MonopolyDeal
             return WildColor;
         }
 
+        public void PlayActionCard(string action)
+        {         
+            switch(action)
+            {
+                case "Deal Breaker":
+                    break;
+                case "Debt Collector":
+                    break;
+                case "Double the Rent":
+                    break;
+                case "Forced Deal":
+                    break;
+                case "Hotel":
+                    break;
+                case "House":
+                    break;
+                case "It's My Birthday":
+                    break;
+                case "Just Say No":
+                    break;
+                case "Pass Go":
+                    break;
+                case "Sly Deal":
+                    break;
+            }
+
+        }
+
         public void TurnLoop(Player player, int iPlayer)
         {
             int numOfActions = 3;
@@ -225,6 +253,7 @@ namespace MonopolyDeal
                                           "'show bank'         - displays cards in bank\n" +
                                           "'show bank value'   - displays your bank value\n" +
                                           "'show properties'   - displays your properties\n" +
+                                          "'change wild color' - change the color of a laid down wild card (does not count as an action)" +
                                           "'show actions'      - displays the number of actions available to player\n" +
                                           "'hand count'        - number of cards in hand\n" +
                                           "'bank count'        - number of cards in bank\n" +                                                                               
@@ -416,5 +445,19 @@ namespace MonopolyDeal
 
         List<PropertySet>[] propertyArray = new List<PropertySet>[5];
         public string TheWinner;
+
+        List<string> actionCards = new List<string>
+            {
+                "Deal Breaker",
+                "Debt Collector",
+                "Double the Rent",
+                "Forced Deal",
+                "Hotel",
+                "House",
+                "It's My Birthday",
+                "Just Say No",
+                "Pass Go",
+                "Sly Deal"
+            };
     }
 }
